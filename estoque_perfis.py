@@ -48,6 +48,7 @@ class FileManager:
 
         planilha_a_faturar.sheets['Macro'].activate()
 
+
     def abrir_planilha_faturado(self):
         ano = datetime.now().strftime('%y')
         mes = datetime.now().strftime('%m')
@@ -173,12 +174,10 @@ class Program:
 
             xw.Range("A1").end('down').paste()
 
-    def pega_produtos_pedidos(self, pedidos :list):
-
+    #Copia pedidos da planilha a faturar pra planilha de controle
+    def copia_pedidos_a_faturar(self, pedidos):
         pedidos_para_procurar = pedidos
-
-        # A FATURAR
-
+        
         self.file_man.abrir_planilha_a_faturar()
 
         numero_linhas = xw.Range('A2').end('down').row
@@ -186,7 +185,6 @@ class Program:
         pedidos_a_faturar = xw.Range(f'E2:E{numero_linhas}')
 
         pedidos_encontrados = self.data_proc.procurar_pedidos_por_range(pedidos_a_faturar, pedidos_para_procurar)
-        
         
         for pedido in pedidos_encontrados:
 
@@ -198,8 +196,20 @@ class Program:
 
             pedidos_para_procurar.remove(pedido[0])
 
+        #Fecha A FATURAR
+        xw.books.active.close()
 
-        # FATURADO
+        #Retorna pedidos que não achou no A FATURAR
+        return pedidos_para_procurar
+
+    
+
+    def pega_produtos_pedidos(self, pedidos :list):   
+
+        pedidos_restantes = self.copia_pedidos_a_faturar(pedidos)
+
+        print(pedidos_restantes)
+        
 
         
 
