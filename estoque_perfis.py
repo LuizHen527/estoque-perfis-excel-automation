@@ -48,8 +48,16 @@ class FileManager:
 
         planilha_a_faturar.sheets['Macro'].activate()
 
+    def abrir_planilha_faturado(self):
+        ano = datetime.now().strftime('%y')
+        mes = datetime.now().strftime('%m')
+        dia = datetime.now().strftime('%d')
 
- 
+        arquivos = glob.glob(f"\\\\121.137.1.5\\manutencao1\\Lucas\\12_Relatorios\\20{ano}\\01_Relatorios Diarios\\01_Relatorios TecSerp\\{ano}_{mes}_*\\{ano}_{mes}_{dia}*FATURADOS*.xlsx")
+
+        planilha_a_faturar = xw.Book(arquivos[0])
+
+        planilha_a_faturar.sheets['Macro'].activate()
 
 
 
@@ -178,7 +186,6 @@ class Program:
         pedidos_a_faturar = xw.Range(f'E2:E{numero_linhas}')
 
         pedidos_encontrados = self.data_proc.procurar_pedidos_por_range(pedidos_a_faturar, pedidos_para_procurar)
-
         
         
         for pedido in pedidos_encontrados:
@@ -191,26 +198,6 @@ class Program:
 
             pedidos_para_procurar.remove(pedido[0])
 
-
-
-        print('PEDIDOS PROCURAR:')
-        
-        [print(p) for p in pedidos_para_procurar]
-
-        print('PEDIDOS ENCONTRADOS:')
-
-        [print(p[0]) for p in pedidos_encontrados]
-
-        #Saber se achou todos os pedidos
-        for p in pedidos_para_procurar:
-            foi_encontrado = False
-
-            for pe in pedidos_encontrados:
-                if pe[0] == p:
-                    foi_encontrado = True
-                    break
-                    
-            print(f'{p}     {foi_encontrado}')
 
         # FATURADO
 
