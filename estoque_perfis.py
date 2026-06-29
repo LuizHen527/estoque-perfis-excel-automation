@@ -120,6 +120,7 @@ class Program:
         self.data_proc = DataProcessor()
         self.NOME_PLAN_CONTROLE = 'CONTROLE PERFIS'
         self.NOME_PLAN_FATURAR = 'A FATURAR'
+        self.NOME_PLAN_FATURADOS = 'FATURADOS'
 
     def pega_pedidos_relatorio(self):
 
@@ -202,11 +203,40 @@ class Program:
         #Retorna pedidos que não achou no A FATURAR
         return pedidos_para_procurar
 
+    def copia_pedidos_faturados(self, pedidos):
+        pedidos_para_procurar = pedidos
+                
+        self.file_man.abrir_planilha_faturado()
+
+        numero_linhas = xw.Range('A2').end('down').row
+
+        pedidos_faturados = xw.Range(f'E2:E{numero_linhas}')
+
+        pedidos_encontrados = self.data_proc.procurar_pedidos_por_range(pedidos_faturados, pedidos_para_procurar)
+        
+        for pedido in pedidos_encontrados:
+
+            celula = xw.Range(pedido[1])
+
+            self.copia_itens_pedido_plan_tecserp(celula)
+
+            self.file_man.seleciona_planilha_por_nome(self.NOME_PLAN_FATURADOS)
+
+            pedidos_para_procurar.remove(pedido[0])
+
+        #Fecha faturado
+        xw.books.active.close()
+
+        #Retorna pedidos que não achou no A FATURAR
+        return pedidos_para_procurar
+
     
 
     def pega_produtos_pedidos(self, pedidos :list):   
 
         pedidos_restantes = self.copia_pedidos_a_faturar(pedidos)
+
+        pedidos_restantes = self.copia_pedidos_faturados(pedidos_restantes)
 
         print(pedidos_restantes)
         
