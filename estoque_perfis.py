@@ -163,7 +163,7 @@ class Program:
             if celula_cima == None:
                 range_pedido = xw.Range(f'A{celula_num_pedido.row}:AJ{celula_num_pedido.end('up').offset(1, 0).row}')
             else:
-                range_pedido = celula_num_pedido
+                range_pedido = xw.Range(f'A{celula_num_pedido.row}:AJ{celula_num_pedido.row}')
 
             range_pedido.copy()
 
@@ -173,7 +173,11 @@ class Program:
 
             planilha_controle.sheets['pedidos'].activate()
 
-            xw.Range("A1").end('down').paste()
+            if xw.Range("A1").end('down').value == None:
+                xw.Range("A1").end('down').paste()
+            else:
+                xw.Range("A1").end('down').offset(1, 0).paste()
+            
 
     #Copia pedidos da planilha a faturar pra planilha de controle
     def copia_pedidos_a_faturar(self, pedidos):
