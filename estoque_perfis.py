@@ -110,6 +110,29 @@ class DataProcessor:
 
         return pedidos_encontrados
 
+    # pedidos_sistema -> [['122018', 'Pronto', 'Pedido Pronto'], ...]
+    # pedidos_não_encontrados -> ['122151', '122155', ...]
+    # Retorna pedidos_status -> [['122018', 'Pronto'], ...]
+    def verifica_status_pedidos(self, pedidos_sistema, pedidos_não_encontrados):
+
+        def pega_status(pedido):
+            if pedido[1] == 'Pronto':
+                return [pedido[0], 'PRONTO']
+            else:
+                return [pedido[0], 'PRODUZINDO']
+
+        def coloca_pedidos_não_encontrados(pedido):
+            if pedido[0] in pedidos_não_encontrados:
+                return [pedido[0], 'NÃO ENCONTRADO']
+            else:
+                return pedido
+
+        pedidos_status = map(pega_status, pedidos_sistema)
+
+        pedidos_status = map(coloca_pedidos_não_encontrados, pedidos_status)
+
+        return pedidos_status
+
 
 
 
@@ -235,16 +258,14 @@ class Program:
         return pedidos_para_procurar
 
     
-
+    #Retorna pedidos que não foram encontrados
     def pega_produtos_pedidos(self, pedidos :list):   
 
         pedidos_restantes = self.copia_pedidos_a_faturar(pedidos)
 
         pedidos_restantes = self.copia_pedidos_faturados(pedidos_restantes)
 
-        print(pedidos_restantes)
-        
-
+        return pedidos_restantes
         
 
 
@@ -261,10 +282,17 @@ class Program:
 
         pedidos_novos = [p[0] for p in pedidos_sistema if p[0] not in pedidos_verificados]
 
-        self.pega_produtos_pedidos(pedidos_novos)
+        pedidos_nao_encontrados = self.pega_produtos_pedidos(pedidos_novos)
 
-        # Registrar pedido que esta pronto e que não esta pronto
-        # Pensar bem em como fazer isso. Já que isso vai ditar o que as formulas vao fazer com o pedido 
+        pedidos_status = self.data_proc.verifica_status_pedidos(pedidos_sistema, pedidos_nao_encontrados)
+
+
+
+        #Fazer função que pega pedidos_sistema e pedidos_nao_encontrados e coloca status neles
+        #Coloca status convorme a planilha
+        #Coloca status de nao encontrado nos pedidos nao encontrados
+
+
 
 
 def run():
