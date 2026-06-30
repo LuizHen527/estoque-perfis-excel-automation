@@ -87,9 +87,14 @@ class DataProcessor:
 
         log_pedidos.activate()
 
-        data = log_pedidos.tables[0].data_body_range
+        primeira_celula = xw.Range('A2').value
 
-        data = data.value
+        if primeira_celula != None:
+            data = log_pedidos.tables[0].data_body_range
+
+            data = data.value
+        else:
+            data = []
 
         return data
 
@@ -131,7 +136,7 @@ class DataProcessor:
 
         pedidos_status = map(coloca_pedidos_não_encontrados, pedidos_status)
 
-        return pedidos_status
+        return list(pedidos_status)
 
 
 
@@ -267,8 +272,42 @@ class Program:
 
         return pedidos_restantes
         
+    def coloca_status_na_planilha(self, pedidos_status):
+
+        xw.sheets['log-pedidos'].activate()
+
+        primeira_celula = xw.Range('A2')
+
+        if primeira_celula.value == None:
+            primeira_celula.value = pedidos_status
+        else:
+
+            ultima_celula = xw.Range('A2').end('down')
+
+            pedidos_na_planilha = xw.Range(F'A2:A{ultima_celula.row}')
+
+            pedidos_novos = []
+
+            #Atualiza status dos pedidos que já estão na planilha
+            for pedido in pedidos_status:
+
+                for pedido_planilha in pedidos_na_planilha:
+                    numero_pedido_planilha = str(int(pedido_planilha.value))
+
+                    if numero_pedido_planilha == pedido[0]:
+                        status_planilha = pedido_planilha.offset(0, 1)
+                        status_planilha.value = pedido[1]
+                        break
+                else:
+                    pedidos_novos.append(pedido)
+
+            ultima_celula.offset(1, 0).value = pedidos_novos
+
+                
 
 
+
+            
 
 
 
@@ -286,6 +325,9 @@ class Program:
 
         pedidos_status = self.data_proc.verifica_status_pedidos(pedidos_sistema, pedidos_nao_encontrados)
 
+        self.coloca_status_na_planilha(pedidos_status)
+
+
 
 
         #Fazer função que pega pedidos_sistema e pedidos_nao_encontrados e coloca status neles
@@ -298,7 +340,11 @@ class Program:
 def run():
     p = Program()
 
+    pedidos_status = [['122051', 'PRONTO'], ['122137', 'PRODUZINDO'], ['122136', 'PRODUZINDO'], ['122141', 'PRODUZINDO'], ['122139', 'PRODUZINDO'], ['122142', 'PRODUZINDO'], ['122149', 'PRODUZINDO'], ['122122', 'PRONTO'], ['122143', 'PRONTO'], ['122098', 'PRONTO'], ['122133', 'PRONTO'], ['122114', 'PRONTO'], ['122070', 'PRONTO'], ['122152', 'PRONTO'], ['122018', 'PRONTO'], ['122151', 'NÃO ENCONTRADO'], ['121906', 'PRODUZINDO'], ['122155', 'NÃO ENCONTRADO'], ['122144', 'PRONTO'], ['122163', 'NÃO ENCONTRADO'], ['122145', 'PRONTO'], ['122164', 'NÃO ENCONTRADO'], ['122007', 'PRONTO'], ['122146', 'NÃO ENCONTRADO'], ['122170', 'NÃO ENCONTRADO'], ['116572', 'NÃO ENCONTRADO'], ['122179', 'PRONTO'], ['122165', 'PRONTO'], ['122158', 'PRODUZINDO'], ['121991', 'PRODUZINDO'], ['122212', 'PRODUZINDO'], ['122153', 'NÃO ENCONTRADO'], ['122134', 'PRONTO'], ['122058', 'PRONTO'], ['122198', 'NÃO ENCONTRADO'], ['122127', 'PRODUZINDO'], ['122044', 'PRODUZINDO'], ['122080', 'PRODUZINDO'], ['122205', 'PRODUZINDO'], ['122206', 'PRODUZINDO'], ['122197', 'PRONTO'], ['122215', 'PRONTO'], ['120991', 'PRODUZINDO'], ['121370', 'NÃO ENCONTRADO'], ['121737', 'NÃO ENCONTRADO'], ['122250', 'PRODUZINDO'], ['121895', 'PRONTO'], ['122236', 'PRONTO'], ['122242', 'PRONTO'], ['122231', 'PRONTO'], ['122251', 'PRONTO'], ['122219', 'NÃO ENCONTRADO'], ['122258', 'PRODUZINDO'], ['122257', 'PRONTO'], ['122126', 'PRODUZINDO'], ['122275', 'PRONTO'], ['122283', 'PRONTO'], ['122314', 'NÃO ENCONTRADO'], ['122299', 'PRONTO'], ['120525', 'PRONTO']]
+
     p.atualiza_estoque_perfis()
+
+    
 
     
 
