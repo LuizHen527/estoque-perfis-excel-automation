@@ -35,7 +35,7 @@ class FileManager:
     def seleciona_planilha_por_nome(self, nome):
         for book in xw.books:
             if nome in book.name:
-                book.activate(True)
+                book.activate()
 
     def abrir_planilha_a_faturar(self):
         ano = datetime.now().strftime('%y')
@@ -146,6 +146,7 @@ class DataProcessor:
 class Program:
 
     def __init__(self):
+
         self.file_man = FileManager()
         self.data_proc = DataProcessor()
         self.NOME_PLAN_CONTROLE = 'CONTROLE PERFIS'
@@ -273,7 +274,8 @@ class Program:
         pedidos_restantes = self.copia_pedidos_faturados(pedidos_restantes)
     
         return pedidos_restantes
-        
+
+    #Atualiza os status do numero de pedidos
     def coloca_status_na_planilha(self, pedidos_status):
 
         xw.sheets['log-pedidos'].activate()
@@ -316,6 +318,17 @@ class Program:
 
         macro()
 
+    def converte_kits_em_perfis(self):
+        
+        self.file_man.seleciona_planilha_por_nome('CONTROLE PERFIS')
+
+        planilha_controle = xw.books.active
+
+        planilha_controle.sheets['contagem'].activate()
+
+        macro = planilha_controle.macro('VbaFunctions.FazCalculadorasPerfis')
+
+        macro()
             
 
 
@@ -341,6 +354,8 @@ class Program:
 
         self.coloca_status_na_planilha(pedidos_status)
 
+        self.converte_kits_em_perfis()
+
         app_excel.display_alerts = True
 
 
@@ -354,11 +369,16 @@ class Program:
 
 
 def run():
+    app = xw.apps.active
+    app.api.ScreenUpdating = True
+
     p = Program()
 
     #pedidos_status = [['122051', 'PRONTO'], ['122137', 'PRODUZINDO'], ['122136', 'PRODUZINDO'], ['122141', 'PRODUZINDO'], ['122139', 'PRODUZINDO'], ['122142', 'PRODUZINDO'], ['122149', 'PRODUZINDO'], ['122122', 'PRONTO'], ['122143', 'PRONTO'], ['122098', 'PRONTO'], ['122133', 'PRONTO'], ['122114', 'PRONTO'], ['122070', 'PRONTO'], ['122152', 'PRONTO'], ['122018', 'PRONTO'], ['122151', 'NÃO ENCONTRADO'], ['121906', 'PRODUZINDO'], ['122155', 'NÃO ENCONTRADO'], ['122144', 'PRONTO'], ['122163', 'NÃO ENCONTRADO'], ['122145', 'PRONTO'], ['122164', 'NÃO ENCONTRADO'], ['122007', 'PRONTO'], ['122146', 'NÃO ENCONTRADO'], ['122170', 'NÃO ENCONTRADO'], ['116572', 'NÃO ENCONTRADO'], ['122179', 'PRONTO'], ['122165', 'PRONTO'], ['122158', 'PRODUZINDO'], ['121991', 'PRODUZINDO'], ['122212', 'PRODUZINDO'], ['122153', 'NÃO ENCONTRADO'], ['122134', 'PRONTO'], ['122058', 'PRONTO'], ['122198', 'NÃO ENCONTRADO'], ['122127', 'PRODUZINDO'], ['122044', 'PRODUZINDO'], ['122080', 'PRODUZINDO'], ['122205', 'PRODUZINDO'], ['122206', 'PRODUZINDO'], ['122197', 'PRONTO'], ['122215', 'PRONTO'], ['120991', 'PRODUZINDO'], ['121370', 'NÃO ENCONTRADO'], ['121737', 'NÃO ENCONTRADO'], ['122250', 'PRODUZINDO'], ['121895', 'PRONTO'], ['122236', 'PRONTO'], ['122242', 'PRONTO'], ['122231', 'PRONTO'], ['122251', 'PRONTO'], ['122219', 'NÃO ENCONTRADO'], ['122258', 'PRODUZINDO'], ['122257', 'PRONTO'], ['122126', 'PRODUZINDO'], ['122275', 'PRONTO'], ['122283', 'PRONTO'], ['122314', 'NÃO ENCONTRADO'], ['122299', 'PRONTO'], ['120525', 'PRONTO']]
 
     p.atualiza_estoque_perfis()
+
+    app.api.ScreenUpdating = True
 
     
 
