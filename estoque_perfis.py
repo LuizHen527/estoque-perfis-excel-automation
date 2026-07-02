@@ -51,8 +51,11 @@ class FileManager:
 
     def abrir_planilha_faturado(self):
         ano = datetime.now().strftime('%y')
-        mes = datetime.now().strftime('%m')
-        dia = datetime.now().strftime('%d')
+        # mes = datetime.now().strftime('%m')
+        # dia = datetime.now().strftime('%d')
+
+        mes = '06'
+        dia = '29'
 
         arquivos = glob.glob(f"\\\\121.137.1.5\\manutencao1\\Lucas\\12_Relatorios\\20{ano}\\01_Relatorios Diarios\\01_Relatorios TecSerp\\{ano}_{mes}_*\\{ano}_{mes}_{dia}*FATURADOS*.xlsx")
 
@@ -138,8 +141,7 @@ class DataProcessor:
 
         return list(pedidos_status)
 
-
-
+    
 
 class Program:
 
@@ -264,12 +266,12 @@ class Program:
 
     
     #Retorna pedidos que não foram encontrados
-    def pega_produtos_pedidos(self, pedidos :list):   
+    def pega_produtos_pedidos(self, pedidos :list):
 
         pedidos_restantes = self.copia_pedidos_a_faturar(pedidos)
 
         pedidos_restantes = self.copia_pedidos_faturados(pedidos_restantes)
-
+    
         return pedidos_restantes
         
     def coloca_status_na_planilha(self, pedidos_status):
@@ -303,15 +305,25 @@ class Program:
 
             ultima_celula.offset(1, 0).value = pedidos_novos
 
-                
 
+    def completa_espaço_branco_coluna_perfis(self):
 
+        self.file_man.seleciona_planilha_por_nome('CONTROLE PERFIS')
+
+        planilha_controle = xw.books.active
+
+        macro = planilha_controle.macro('VbaFunctions.CompletaEspaçoBrancoColunaPerfis')
+
+        macro()
 
             
 
 
 
     def atualiza_estoque_perfis(self):
+
+        app_excel = xw.apps.active
+        app_excel.display_alerts = False
 
         #Pedidos do sistema de rastreio
         pedidos_sistema = self.pega_pedidos_relatorio()
@@ -323,9 +335,13 @@ class Program:
 
         pedidos_nao_encontrados = self.pega_produtos_pedidos(pedidos_novos)
 
+        self.completa_espaço_branco_coluna_perfis()
+
         pedidos_status = self.data_proc.verifica_status_pedidos(pedidos_sistema, pedidos_nao_encontrados)
 
         self.coloca_status_na_planilha(pedidos_status)
+
+        app_excel.display_alerts = True
 
 
 
@@ -340,7 +356,7 @@ class Program:
 def run():
     p = Program()
 
-    pedidos_status = [['122051', 'PRONTO'], ['122137', 'PRODUZINDO'], ['122136', 'PRODUZINDO'], ['122141', 'PRODUZINDO'], ['122139', 'PRODUZINDO'], ['122142', 'PRODUZINDO'], ['122149', 'PRODUZINDO'], ['122122', 'PRONTO'], ['122143', 'PRONTO'], ['122098', 'PRONTO'], ['122133', 'PRONTO'], ['122114', 'PRONTO'], ['122070', 'PRONTO'], ['122152', 'PRONTO'], ['122018', 'PRONTO'], ['122151', 'NÃO ENCONTRADO'], ['121906', 'PRODUZINDO'], ['122155', 'NÃO ENCONTRADO'], ['122144', 'PRONTO'], ['122163', 'NÃO ENCONTRADO'], ['122145', 'PRONTO'], ['122164', 'NÃO ENCONTRADO'], ['122007', 'PRONTO'], ['122146', 'NÃO ENCONTRADO'], ['122170', 'NÃO ENCONTRADO'], ['116572', 'NÃO ENCONTRADO'], ['122179', 'PRONTO'], ['122165', 'PRONTO'], ['122158', 'PRODUZINDO'], ['121991', 'PRODUZINDO'], ['122212', 'PRODUZINDO'], ['122153', 'NÃO ENCONTRADO'], ['122134', 'PRONTO'], ['122058', 'PRONTO'], ['122198', 'NÃO ENCONTRADO'], ['122127', 'PRODUZINDO'], ['122044', 'PRODUZINDO'], ['122080', 'PRODUZINDO'], ['122205', 'PRODUZINDO'], ['122206', 'PRODUZINDO'], ['122197', 'PRONTO'], ['122215', 'PRONTO'], ['120991', 'PRODUZINDO'], ['121370', 'NÃO ENCONTRADO'], ['121737', 'NÃO ENCONTRADO'], ['122250', 'PRODUZINDO'], ['121895', 'PRONTO'], ['122236', 'PRONTO'], ['122242', 'PRONTO'], ['122231', 'PRONTO'], ['122251', 'PRONTO'], ['122219', 'NÃO ENCONTRADO'], ['122258', 'PRODUZINDO'], ['122257', 'PRONTO'], ['122126', 'PRODUZINDO'], ['122275', 'PRONTO'], ['122283', 'PRONTO'], ['122314', 'NÃO ENCONTRADO'], ['122299', 'PRONTO'], ['120525', 'PRONTO']]
+    #pedidos_status = [['122051', 'PRONTO'], ['122137', 'PRODUZINDO'], ['122136', 'PRODUZINDO'], ['122141', 'PRODUZINDO'], ['122139', 'PRODUZINDO'], ['122142', 'PRODUZINDO'], ['122149', 'PRODUZINDO'], ['122122', 'PRONTO'], ['122143', 'PRONTO'], ['122098', 'PRONTO'], ['122133', 'PRONTO'], ['122114', 'PRONTO'], ['122070', 'PRONTO'], ['122152', 'PRONTO'], ['122018', 'PRONTO'], ['122151', 'NÃO ENCONTRADO'], ['121906', 'PRODUZINDO'], ['122155', 'NÃO ENCONTRADO'], ['122144', 'PRONTO'], ['122163', 'NÃO ENCONTRADO'], ['122145', 'PRONTO'], ['122164', 'NÃO ENCONTRADO'], ['122007', 'PRONTO'], ['122146', 'NÃO ENCONTRADO'], ['122170', 'NÃO ENCONTRADO'], ['116572', 'NÃO ENCONTRADO'], ['122179', 'PRONTO'], ['122165', 'PRONTO'], ['122158', 'PRODUZINDO'], ['121991', 'PRODUZINDO'], ['122212', 'PRODUZINDO'], ['122153', 'NÃO ENCONTRADO'], ['122134', 'PRONTO'], ['122058', 'PRONTO'], ['122198', 'NÃO ENCONTRADO'], ['122127', 'PRODUZINDO'], ['122044', 'PRODUZINDO'], ['122080', 'PRODUZINDO'], ['122205', 'PRODUZINDO'], ['122206', 'PRODUZINDO'], ['122197', 'PRONTO'], ['122215', 'PRONTO'], ['120991', 'PRODUZINDO'], ['121370', 'NÃO ENCONTRADO'], ['121737', 'NÃO ENCONTRADO'], ['122250', 'PRODUZINDO'], ['121895', 'PRONTO'], ['122236', 'PRONTO'], ['122242', 'PRONTO'], ['122231', 'PRONTO'], ['122251', 'PRONTO'], ['122219', 'NÃO ENCONTRADO'], ['122258', 'PRODUZINDO'], ['122257', 'PRONTO'], ['122126', 'PRODUZINDO'], ['122275', 'PRONTO'], ['122283', 'PRONTO'], ['122314', 'NÃO ENCONTRADO'], ['122299', 'PRONTO'], ['120525', 'PRONTO']]
 
     p.atualiza_estoque_perfis()
 
