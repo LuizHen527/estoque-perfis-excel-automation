@@ -2,6 +2,7 @@ import xlwings as xw
 import os
 import glob
 from datetime import datetime
+import time
 
 def Hello():
     workbook = xw.books.active
@@ -51,11 +52,11 @@ class FileManager:
 
     def abrir_planilha_faturado(self):
         ano = datetime.now().strftime('%y')
-        # mes = datetime.now().strftime('%m')
-        # dia = datetime.now().strftime('%d')
+        mes = datetime.now().strftime('%m')
+        dia = datetime.now().strftime('%d')
 
-        mes = '06'
-        dia = '29'
+        #mes = '06'
+        #dia = '29'
 
         arquivos = glob.glob(f"\\\\121.137.1.5\\manutencao1\\Lucas\\12_Relatorios\\20{ano}\\01_Relatorios Diarios\\01_Relatorios TecSerp\\{ano}_{mes}_*\\{ano}_{mes}_{dia}*FATURADOS*.xlsx")
 
@@ -96,6 +97,9 @@ class DataProcessor:
             data = log_pedidos.tables[0].data_body_range
 
             data = data.value
+
+            for item in data:
+                item[0] = str(int(item[0]))
         else:
             data = []
 
@@ -137,7 +141,8 @@ class DataProcessor:
 
         pedidos_status = map(pega_status, pedidos_sistema)
 
-        pedidos_status = map(coloca_pedidos_não_encontrados, pedidos_status)
+        if pedidos_não_encontrados:
+            pedidos_status = map(coloca_pedidos_não_encontrados, pedidos_status)
 
         return list(pedidos_status)
 
@@ -338,17 +343,24 @@ class Program:
         app_excel = xw.apps.active
         app_excel.display_alerts = False
 
+
         #Pedidos do sistema de rastreio
         pedidos_sistema = self.pega_pedidos_relatorio()
 
         #Pedidos dos logs
         pedidos_verificados = self.pega_pedidos_verificados()
 
-        pedidos_novos = [p[0] for p in pedidos_sistema if p[0] not in pedidos_verificados]
+        pedidos_verificados_numero = [p[0] for p in pedidos_verificados]
 
-        pedidos_nao_encontrados = self.pega_produtos_pedidos(pedidos_novos)
+        pedidos_novos = [p[0] for p in pedidos_sistema if p[0] not in pedidos_verificados_numero]
 
-        self.completa_espaço_branco_coluna_perfis()
+        pedidos_nao_encontrados = False
+
+        if pedidos_novos:
+            pedidos_nao_encontrados = self.pega_produtos_pedidos(pedidos_novos)
+        
+            self.completa_espaço_branco_coluna_perfis()
+
 
         pedidos_status = self.data_proc.verifica_status_pedidos(pedidos_sistema, pedidos_nao_encontrados)
 
