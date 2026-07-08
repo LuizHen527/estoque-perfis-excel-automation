@@ -16,21 +16,45 @@ def Hello():
 #   FileManager -> seleciona_planilha_por_nome
 #       Pode dar erro se tiver mais de uma planilha de contagem
 
+class Dialog:
+    def __init__(self):
+        pass
+
+    def mostrar_mensagem_fim(self, numero_itens_adicionados):
+
+        planilha = xw.books.active
+
+        msgbox = planilha.macro("VbaFunctions.EndMsg")
+
+        msgbox(f'{numero_itens_adicionados}')
+
+    def mostrar_msg_erro_abrir_plan_pedidos(self):
+        planilha  = xw.books.active
+
+        msgbox = planilha.macro("VbaFunctions.ErrorOpenOrdersPlan")
+
+        msgbox()
+
 
 class FileManager:
 
     def __init__(self):
 
         # Sistema de rastreador de pedidos 
-        self.relatorio_pedidos_pasta = r"\\121.137.1.5\manutencao1\Lucas\21_Luiz\Programas\controle-perfis-moducolor\relatorio-de-pedidos"
+        self.relatorio_pedidos_pasta = r"\\121.137.1.5\manutencao1\Lucas\21_Luiz\Planilhas\Lóris\controle-perfis-moducolor\relatorio-de-pedidos"
 
     def abrir_relatorio_pedidos(self):
 
         arquivos = os.listdir(self.relatorio_pedidos_pasta)
 
+        if not arquivos:
+            return False
+
         arquivo = f"{self.relatorio_pedidos_pasta}\\{arquivos[0]}"
 
-        xw.Book(arquivo)
+        planilha = xw.Book(arquivo)
+
+        return planilha
 
     #Pode dar parte do nome
     def seleciona_planilha_por_nome(self, nome):
@@ -67,6 +91,10 @@ class FileManager:
         planilha_a_faturar = xw.Book(arquivos[0])
 
         planilha_a_faturar.sheets['Macro'].activate()
+
+    def deleta_planilha_sistema(self, caminho_planilha):
+        os.remove(caminho_planilha)
+
 
 
 
@@ -158,6 +186,7 @@ class Program:
 
         self.file_man = FileManager()
         self.data_proc = DataProcessor()
+        self.dialog = Dialog()
         self.NOME_PLAN_CONTROLE = 'CONTROLE PERFIS'
         self.NOME_PLAN_FATURAR = 'A FATURAR'
         self.NOME_PLAN_FATURADOS = 'FATURADOS'
@@ -175,7 +204,12 @@ class Program:
 
         pedidos_filtrados = []
 
-        self.file_man.abrir_relatorio_pedidos()
+        planilha_pedidos = self.file_man.abrir_relatorio_pedidos()
+
+        if not planilha_pedidos:
+            return False
+
+        plan_pedidos_path = planilha_pedidos.fullname
 
         pedidos = self.data_proc.pegar_pedidos_relatorio()
 
@@ -184,6 +218,8 @@ class Program:
         pedidos_filtrados = [p for p in pedidos]
 
         xw.books.active.close()
+
+        self.file_man.deleta_planilha_sistema(plan_pedidos_path)
 
         return pedidos_filtrados
 
@@ -353,6 +389,8 @@ class Program:
 
         xw.Range('AP3').paste('values')
 
+        plan_faturar.close()
+
 
 
 
@@ -366,6 +404,10 @@ class Program:
         #Pedidos do sistema de rastreio
         pedidos_sistema = self.pega_pedidos_relatorio()
 
+        if not pedidos_sistema:
+            self.dialog.mostrar_msg_erro_abrir_plan_pedidos()
+            return False
+
         #Pedidos dos logs
         pedidos_verificados = self.pega_pedidos_verificados()
 
@@ -374,6 +416,8 @@ class Program:
         pedidos_novos = [p[0] for p in pedidos_sistema if p[0] not in pedidos_verificados_numero]
 
         pedidos_nao_encontrados = False
+
+        print(pedidos_novos)
 
         if pedidos_novos:
             pedidos_nao_encontrados = self.pega_produtos_pedidos(pedidos_novos)
@@ -391,12 +435,7 @@ class Program:
 
         app_excel.display_alerts = True
 
-
-
-
-        #Fazer função que pega pedidos_sistema e pedidos_nao_encontrados e coloca status neles
-        #Coloca status convorme a planilha
-        #Coloca status de nao encontrado nos pedidos nao encontrados
+        self.dialog.mostrar_mensagem_fim(len(pedidos_novos))
 
 
 
@@ -407,10 +446,7 @@ def run():
 
     p = Program()
 
-    #pedidos_status = [['122051', 'PRONTO'], ['122137', 'PRODUZINDO'], ['122136', 'PRODUZINDO'], ['122141', 'PRODUZINDO'], ['122139', 'PRODUZINDO'], ['122142', 'PRODUZINDO'], ['122149', 'PRODUZINDO'], ['122122', 'PRONTO'], ['122143', 'PRONTO'], ['122098', 'PRONTO'], ['122133', 'PRONTO'], ['122114', 'PRONTO'], ['122070', 'PRONTO'], ['122152', 'PRONTO'], ['122018', 'PRONTO'], ['122151', 'NÃO ENCONTRADO'], ['121906', 'PRODUZINDO'], ['122155', 'NÃO ENCONTRADO'], ['122144', 'PRONTO'], ['122163', 'NÃO ENCONTRADO'], ['122145', 'PRONTO'], ['122164', 'NÃO ENCONTRADO'], ['122007', 'PRONTO'], ['122146', 'NÃO ENCONTRADO'], ['122170', 'NÃO ENCONTRADO'], ['116572', 'NÃO ENCONTRADO'], ['122179', 'PRONTO'], ['122165', 'PRONTO'], ['122158', 'PRODUZINDO'], ['121991', 'PRODUZINDO'], ['122212', 'PRODUZINDO'], ['122153', 'NÃO ENCONTRADO'], ['122134', 'PRONTO'], ['122058', 'PRONTO'], ['122198', 'NÃO ENCONTRADO'], ['122127', 'PRODUZINDO'], ['122044', 'PRODUZINDO'], ['122080', 'PRODUZINDO'], ['122205', 'PRODUZINDO'], ['122206', 'PRODUZINDO'], ['122197', 'PRONTO'], ['122215', 'PRONTO'], ['120991', 'PRODUZINDO'], ['121370', 'NÃO ENCONTRADO'], ['121737', 'NÃO ENCONTRADO'], ['122250', 'PRODUZINDO'], ['121895', 'PRONTO'], ['122236', 'PRONTO'], ['122242', 'PRONTO'], ['122231', 'PRONTO'], ['122251', 'PRONTO'], ['122219', 'NÃO ENCONTRADO'], ['122258', 'PRODUZINDO'], ['122257', 'PRONTO'], ['122126', 'PRODUZINDO'], ['122275', 'PRONTO'], ['122283', 'PRONTO'], ['122314', 'NÃO ENCONTRADO'], ['122299', 'PRONTO'], ['120525', 'PRONTO']]
-
     p.atualiza_estoque_perfis()
-
 
     app.api.ScreenUpdating = True
 
